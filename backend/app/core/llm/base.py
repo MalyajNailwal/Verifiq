@@ -66,6 +66,8 @@ class LLMClient(ABC):
         self.max_retries = max_retries
         self.temperature = temperature
         self.max_tokens = max_tokens
+        # Metadata of the most recent completion (tokens, latency) for audit logs.
+        self.last_response: LLMResponse | None = None
 
     @abstractmethod
     def _complete_raw(self, prompt: str, system: str | None = None) -> LLMResponse:
@@ -81,6 +83,7 @@ class LLMClient(ABC):
         except Exception as exc:
             raise LLMUnavailableError(f"{self.provider} call failed: {exc}") from exc
         resp.latency_ms = int((time.monotonic() - start) * 1000)
+        self.last_response = resp
         logger.info(
             "llm_call provider=%s model=%s latency_ms=%s prompt_tokens=%s completion_tokens=%s",
             self.provider,

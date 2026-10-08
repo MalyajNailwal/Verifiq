@@ -9,7 +9,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/tests-14%20passing-brightgreen)](backend/tests)
+[![Tests](https://img.shields.io/badge/tests-33%20passing-brightgreen)](backend/tests)
 [![Lint](https://img.shields.io/badge/ruff-clean-success)](https://docs.astral.sh/ruff/)
 
 ---
@@ -76,7 +76,7 @@ anything the machine is unsure about.**
 | Phase | Component | Status |
 |-------|-----------|--------|
 | 1 | Scaffold, DB + migrations, config, LLMClient (OpenRouter default) | ✅ **done** |
-| 2 | IngestNode (OCR: PaddleOCR + pdfplumber fallback), ExtractionAgent | ⬜ |
+| 2 | IngestNode (text PDFs via pdfplumber, `.txt` passthrough, vision flags; PaddleOCR hook), ExtractionAgent (versioned prompts + few-shot, schema-validated, persisted with confidence + source) | ✅ **done** |
 | 3 | CrossCheckAgent + ChecklistAgent (deterministic rules) | ⬜ |
 | 4 | ReportAgent + RouterNode + LangGraph wiring + API endpoints | ⬜ |
 | 5 | React frontend (upload, case page, review queue) | ⬜ |
