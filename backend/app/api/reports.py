@@ -6,9 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
+from app.core.config import Settings, get_settings
 from app.core.db import get_db
 from app.models import Case, Report
 from app.schemas.report import ReportOut
+from app.services.anchor import AnchorError, anchor_report
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/cases", tags=["reports"])
@@ -29,6 +31,33 @@ def get_report(case_id: str, db: Session = Depends(get_db)) -> Report:
     report = db.query(Report).filter_by(case_id=case.id).first()
     if report is None:
         raise HTTPException(404, "report not generated yet — run the pipeline first")
+    return report
+
+
+@router.post("/{case_id}/report/anchor", response_model=ReportOut)
+def anchor_case_report(
+    case_id: str,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> Report:
+    """Anchor the report hash on Polygon Amoy testnet (Phase 6, optional).
+
+    Requires POLYGON_ANCHOR_ENABLED=true, POLYGON_PRIVATE_KEY (funded with
+    testnet POL) and `pip install '.[chain]'`. Idempotent — an anchored
+    report returns its existing tx without re-submitting.
+    """
+    case = db.get(Case, _uuid(case_id)) if _is_uuid(case_id) else None
+    if case is None:
+        raise HTTPException(404, f"case {case_id} not found")
+    report = db.query(Report).filter_by(case_id=case.id).first()
+    if report is None:
+        raise HTTPException(404, "report not generated yet — run the pipeline first")
+    try:
+        result = anchor_report(db, report, settings)
+    except AnchorError as exc:
+        raise HTTPException(503, f"anchoring unavailable: {exc}") from exc
+    logger.info("anchored case_id=%s tx=%s status=%s", case_id, result.tx_hash, result.status)
+    db.refresh(report)
     return report
 
 

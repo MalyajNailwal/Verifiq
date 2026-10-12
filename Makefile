@@ -1,9 +1,10 @@
-.PHONY: help install install-ocr install-dev db-up db-down migrate revision test lint format run
+.PHONY: help install install-ocr install-chain install-dev db-up db-down migrate revision test lint format run
 
 help:
 	@echo "install      - create venv and install backend deps"
 	@echo "install-dev  - install dev/test extras into venv"
 	@echo "install-ocr  - install PaddleOCR/pdfplumber extras (heavy)"
+	@echo "install-chain - install web3 extra for Polygon anchoring"
 	@echo "db-up        - start Postgres via docker compose"
 	@echo "db-down      - stop docker compose stack"
 	@echo "migrate      - apply Alembic migrations"
@@ -21,6 +22,9 @@ install-dev:
 
 install-ocr:
 	pip install -e '.[ocr]'
+
+install-chain:
+	pip install -e '.[chain]'
 
 db-up:
 	docker compose up -d db

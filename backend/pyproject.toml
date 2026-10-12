@@ -21,6 +21,8 @@ dependencies = [
 [project.optional-dependencies]
 # Heavy OCR dependency installed separately (make install-ocr) to keep dev envs light.
 ocr = ["paddleocr>=2.7", "pdfplumber>=0.11"]
+# Phase 6: on-chain anchoring of report hashes on Polygon Amoy (make install-chain).
+chain = ["web3>=6.0"]
 # Optional LLM providers; enable what you use.
 openai = ["openai>=1.40"]
 gemini = ["google-genai>=1.0"]

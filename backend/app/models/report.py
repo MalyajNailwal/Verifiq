@@ -25,6 +25,11 @@ class Report(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     pdf_path: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     prompt_version: Mapped[str | None] = mapped_column(String(32), nullable=True)
     generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    # Phase 6: on-chain anchoring of report_hash on Polygon Amoy testnet
+    anchor_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    anchor_tx_hash: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    anchor_block_number: Mapped[int | None] = mapped_column(nullable=True)
+    anchored_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     case: Mapped["Case"] = relationship(back_populates="report")  # noqa: F821
 

@@ -21,3 +21,8 @@ class ReportOut(BaseModel):
     report_hash: str
     pdf_path: str | None
     generated_at: datetime
+    # Phase 6: on-chain anchoring (null until anchored)
+    anchor_status: str | None = None
+    anchor_tx_hash: str | None = None
+    anchor_block_number: int | None = None
+    anchored_at: datetime | None = None

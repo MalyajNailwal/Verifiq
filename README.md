@@ -9,7 +9,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/tests-86%20passing-brightgreen)](backend/tests)
+[![Tests](https://img.shields.io/badge/tests-97%20passing-brightgreen)](backend/tests)
 [![Lint](https://img.shields.io/badge/ruff-clean-success)](https://docs.astral.sh/ruff/)
 
 ---
@@ -80,8 +80,8 @@ anything the machine is unsure about.**
 | 3 | CrossCheckAgent + ChecklistAgent (deterministic rules, YAML-driven) | ✅ **done** |
 | 4 | ReportAgent (rule-based score + LLM wording) + RouterNode + LangGraph wiring + full API + React frontend (upload, case page, review queue) | ✅ **done** |
 | 5 | React frontend (upload, case page, review queue) | ✅ **done** (Vite + Tailwind, "verification registry" aesthetic) |
-| 6 | Polygon Amoy hash anchoring (optional) | ⬜ |
-| 7 | Demo script + end-to-end tests with 3 synthetic cases | ✅ **done** (86 tests, e2e runs the 3 samples through the full graph) |
+| 6 | Polygon Amoy hash anchoring (optional): report SHA-256 written as tx calldata on Amoy testnet, `POST /cases/{id}/report/anchor`, idempotent, `web3` optional extra | ✅ **done** |
+| 7 | Demo script + end-to-end tests with 3 synthetic cases | ✅ **done** (e2e runs the 3 samples through the full graph) |
 
 ## 5. Quickstart
 
@@ -144,7 +144,7 @@ backend/
 │   └── services/       # ingest, extraction, crosscheck, checklist, report, router, graph
 │       └── checklists.yaml  # per-asset-type required-docs + validity windows
 ├── alembic/            # migrations (0001 initial schema)
-├── tests/              # 86 tests: unit + API + e2e synthetic cases
+├── tests/              # 97 tests: unit + API + e2e synthetic cases + anchoring
 ├── samples/cases/      # 3 synthetic case packs (clean / mismatch / stale) for the demo
 ├── Dockerfile
 └── pyproject.toml
@@ -171,6 +171,7 @@ Makefile  .env.example  .pre-commit-config.yaml
 | POST | `/cases/{id}/documents` | Upload a document (stored content-addressed, SHA-256 dedupe) |
 | POST | `/cases/{id}/run` | Run the full pipeline (ingest▶extract▶crosscheck▶checklist▶report▶route) |
 | GET | `/cases/{id}/report` | Verification report (deterministic rating + hash) |
+| POST | `/cases/{id}/report/anchor` | Anchor report hash on Polygon Amoy (optional, `make install-chain`) |
 | GET | `/review-tasks` | Human review queue |
 | POST | `/review-tasks/{id}/decide` | Approve/reject with notes |
 

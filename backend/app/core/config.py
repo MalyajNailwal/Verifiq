@@ -43,6 +43,17 @@ class Settings(BaseSettings):
     valuation_max_age_months: int = Field(default=12, alias="VALUATION_MAX_AGE_MONTHS")
     area_mismatch_tolerance_pct: float = Field(default=2.0, alias="AREA_MISMATCH_TOLERANCE_PCT")
 
+    # --- Polygon anchoring (Phase 6): report hashes on Amoy testnet ---
+    polygon_anchor_enabled: bool = Field(default=False, alias="POLYGON_ANCHOR_ENABLED")
+    polygon_rpc_url: str = Field(
+        default="https://rpc-amoy.polygon.technology", alias="POLYGON_RPC_URL"
+    )
+    polygon_chain_id: int = Field(default=80002, alias="POLYGON_CHAIN_ID")  # Amoy testnet
+    polygon_private_key: str | None = Field(default=None, alias="POLYGON_PRIVATE_KEY")
+    polygon_explorer_tx_url: str = Field(
+        default="https://amoy.polygonscan.com/tx/", alias="POLYGON_EXPLORER_TX_URL"
+    )
+
     # --- Storage ---
     storage_dir: str = Field(default="./storage", alias="STORAGE_DIR")
 
