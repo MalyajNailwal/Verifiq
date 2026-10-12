@@ -68,8 +68,11 @@ def test_pipeline_happy_path(db_session, settings) -> None:
 
     result = run_case_pipeline(db_session, case.id, llm, settings)
 
-    assert result.status == CaseStatus.PROCESSING
-    assert case.status == CaseStatus.PROCESSING
+    # Phase 4: the pipeline now runs crosscheck+checklist too — the case only
+    # has a title deed, so required valuation/legal docs are flagged missing
+    # (HIGH) and the router sends it to needs_review.
+    assert result.status == CaseStatus.NEEDS_REVIEW
+    assert case.status == CaseStatus.NEEDS_REVIEW
     doc = case.documents[0]
     assert doc.ocr_status == OcrStatus.DONE
     assert doc.page_count == 1
@@ -77,6 +80,8 @@ def test_pipeline_happy_path(db_session, settings) -> None:
     assert len(fields) == 14  # full schema backfilled
     owner = next(f for f in fields if f.field_name == "owner_name")
     assert json.loads(owner.value) == "Ananya Deshpande"
+    rule_ids = {f.rule_id for f in case.flags}
+    assert "missing_doc:valuation_report" in rule_ids
 
 
 def test_pipeline_skips_already_processed(db_session, settings) -> None:
@@ -84,10 +89,14 @@ def test_pipeline_skips_already_processed(db_session, settings) -> None:
     llm = MockLLMClient()
     llm.canned["DOCUMENT TEXT"] = CANNED
     run_case_pipeline(db_session, case.id, llm, settings)
-    calls_after_first = len(llm.calls)
 
+    def extraction_calls() -> int:
+        # extraction prompt template starts with STRICT RULES; report prompt doesn't
+        return len([c for c in llm.calls if "STRICT RULES" in c])
+
+    after_first = extraction_calls()
     run_case_pipeline(db_session, case.id, llm, settings)  # re-run
-    assert len(llm.calls) == calls_after_first  # no new LLM calls
+    assert extraction_calls() == after_first  # no new extraction LLM calls
 
 
 def test_pipeline_isolates_document_errors(db_session, settings) -> None:

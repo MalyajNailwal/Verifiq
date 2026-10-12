@@ -55,6 +55,17 @@ class ExtractedFieldOut(BaseModel):
     edited_by_reviewer: bool
 
 
+class FlagSummary(BaseModel):
+    id: uuid.UUID
+    severity: str
+    flag_type: str
+    description: str
+    rule_id: str | None = None
+    resolved: bool = False
+    related_fields: list[dict[str, Any]] | None = None
+
+
 class CaseDetail(CaseOut):
     documents: list[DocumentOut] = []
     fields: list[ExtractedFieldOut] = []
+    flags: list[FlagSummary] = []

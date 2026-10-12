@@ -15,7 +15,7 @@ from app.core.config import Settings
 from app.core.db import SessionLocal
 from app.core.llm.base import LLMClient
 from app.models import Case, Document, ExtractedField
-from app.models.enums import CaseStatus, OcrStatus
+from app.models.enums import OcrStatus
 from app.services.extraction import ExtractionError, extract_document
 from app.services.ingest import IngestError, ingest_document
 from app.services.storage import LocalStorage, StorageError
@@ -41,29 +41,23 @@ class PipelineResult:
 def run_case_pipeline(
     db: Session, case_id: uuid.UUID, llm: LLMClient, settings: Settings
 ) -> PipelineResult:
-    """Process all documents of a case. Phase 2 scope: ingest + extraction."""
+    """Phase 2 entrypoint kept for compatibility; delegates to the full graph."""
+    from app.services.graph import run_pipeline
+
+    final = run_pipeline(db, case_id, llm, settings)
     case = db.get(Case, case_id)
-    if case is None:
-        raise ValueError(f"case {case_id} not found")
-    # Note: re-runs are allowed; document-level idempotency (skip processed
-    # docs) makes them cheap. Concurrent-run locking arrives with Phase 4
-    # when a real worker owns the transition.
-    case.status = CaseStatus.PROCESSING
-    db.commit()
-
-    results: list[DocumentResult] = []
-    for doc in list(case.documents):
-        results.append(_process_document(db, doc, llm, settings))
-
-    # Phase 4's RouterNode will finalize status (needs_review / completed).
-    # For now the case stays PROCESSING unless nothing was extracted.
-    if all(r.error is None for r in results) and results:
-        case.status = CaseStatus.PROCESSING  # awaits Phase 3+ nodes
-    db.commit()
     return PipelineResult(
-        case_id=case.id,
-        status=case.status,
-        documents=results,
+        case_id=case_id,
+        status=case.status if case else str(final.get("final_status", "processing")),
+        documents=[
+            DocumentResult(
+                document_id=uuid.UUID(d["document_id"]),
+                ingested=d.get("ingested", False),
+                extracted=d.get("extracted", False),
+                error=d.get("error"),
+            )
+            for d in final.get("doc_results", [])
+        ],
     )
 
 

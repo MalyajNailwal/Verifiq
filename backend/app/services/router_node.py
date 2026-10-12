@@ -59,8 +59,10 @@ def route_case(db: Session, case: Case, settings: Settings) -> str:
                     case_id=case.id,
                     reason="; ".join(reasons),
                     triggers={
-                        "high_flags": [f.id for f in unresolved if f.severity == Severity.HIGH],
-                        "low_confidence_fields": low_conf_ids,
+                        "high_flags": [
+                            str(f.id) for f in unresolved if f.severity == Severity.HIGH
+                        ],
+                        "low_confidence_fields": [str(i) for i in low_conf_ids],
                     },
                     status=ReviewStatus.OPEN,
                 )

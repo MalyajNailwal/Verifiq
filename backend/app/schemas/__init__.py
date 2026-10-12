@@ -8,7 +8,7 @@ from app.schemas.case import (
     ExtractedFieldOut,
 )
 from app.schemas.enums import CaseStatus, DocType, FlagType, ReviewStatus, RiskRating, Severity
-from app.schemas.flag import FlagOut, ReviewResolveRequest, ReviewTaskOut
+from app.schemas.flag import ReviewResolveRequest, ReviewTaskOut
 from app.schemas.report import ReportOut
 
 __all__ = [
