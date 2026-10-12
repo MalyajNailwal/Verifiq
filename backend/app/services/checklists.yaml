@@ -1,0 +1,29 @@
+# Required-documents checklist per asset type.
+# required: the document MUST exist → missing_doc flag when absent
+# valid_months: document_issue_date older than this ⇒ expired_doc flag
+real_estate:
+  required:
+    - doc_type: title_deed
+      required: true
+    - doc_type: valuation_report
+      required: true
+      valid_months: 12
+    - doc_type: legal_opinion
+      required: true
+      valid_months: 24
+  optional:
+    - doc_type: spv_papers
+      required: false
+land:
+  required:
+    - doc_type: title_deed
+      required: true
+    - doc_type: valuation_report
+      required: true
+      valid_months: 12
+  optional: []
+default:
+  required:
+    - doc_type: title_deed
+      required: true
+  optional: []

@@ -159,6 +159,7 @@ def _persist_fields(db: Session, doc: Document, result: ExtractionResult) -> lis
             )
         )
     db.add_all(created)
+    doc.fields = created  # refresh in-memory relationship (selectin can be stale)
     db.commit()
     return created
 
