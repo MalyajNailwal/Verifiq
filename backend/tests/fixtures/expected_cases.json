@@ -1,0 +1,38 @@
+{
+  "description": "3 synthetic cases pipeline me daale gaye, har document deterministic score me buckets verify karte hain",
+  "note": "mock LLM: canonical fixture fields use hote hain (ExtractionAgent results se), LLM per-doc different results dega isliye filter karke assert karo",
+  "cases": [
+    {
+      "name": "case1_clean",
+      "expected_documents": 3,
+      "expected_outcome": "all_clear_possible",
+      "expected_thresholds": {
+        "no_flags_at_or_above_MEDIUM": true
+      }
+    },
+    {
+      "name": "case2_mismatch",
+      "expected_documents": 3,
+      "expected_outcome": "flags_present",
+      "expected_thresholds": {
+        "at_least_one_MEDIUM_or_HIGH": true,
+        "wrong_owner_flag": true,
+        "area_drift_flag": true
+      }
+    },
+    {
+      "name": "case3_missing_expired",
+      "expected_documents": [
+        "title_deed",
+        "valuation_report",
+        "legal_opinion"
+      ],
+      "expected_outcome": "stale_and_missing_flags",
+      "expected_thresholds": {
+        "stale_valuation_flag": true,
+        "stale_legal_opinion_flag": true,
+        "missing_encumbrance_certificate_flag": true
+      }
+    }
+  ]
+}

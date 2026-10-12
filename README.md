@@ -9,7 +9,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/tests-33%20passing-brightgreen)](backend/tests)
+[![Tests](https://img.shields.io/badge/tests-86%20passing-brightgreen)](backend/tests)
 [![Lint](https://img.shields.io/badge/ruff-clean-success)](https://docs.astral.sh/ruff/)
 
 ---
@@ -77,11 +77,11 @@ anything the machine is unsure about.**
 |-------|-----------|--------|
 | 1 | Scaffold, DB + migrations, config, LLMClient (OpenRouter default) | ✅ **done** |
 | 2 | IngestNode (text PDFs via pdfplumber, `.txt` passthrough, vision flags; PaddleOCR hook), ExtractionAgent (versioned prompts + few-shot, schema-validated, persisted with confidence + source) | ✅ **done** |
-| 3 | CrossCheckAgent + ChecklistAgent (deterministic rules) | ⬜ |
-| 4 | ReportAgent + RouterNode + LangGraph wiring + API endpoints | ⬜ |
-| 5 | React frontend (upload, case page, review queue) | ⬜ |
+| 3 | CrossCheckAgent + ChecklistAgent (deterministic rules, YAML-driven) | ✅ **done** |
+| 4 | ReportAgent (rule-based score + LLM wording) + RouterNode + LangGraph wiring + full API + React frontend (upload, case page, review queue) | ✅ **done** |
+| 5 | React frontend (upload, case page, review queue) | ✅ **done** (Vite + Tailwind, "verification registry" aesthetic) |
 | 6 | Polygon Amoy hash anchoring (optional) | ⬜ |
-| 7 | Demo script + end-to-end tests with 3 synthetic cases | ⬜ |
+| 7 | Demo script + end-to-end tests with 3 synthetic cases | ✅ **done** (86 tests, e2e runs the 3 samples through the full graph) |
 
 ## 5. Quickstart
 
@@ -135,17 +135,21 @@ OPENROUTER_API_KEY=sk-or-v1-...
 ```
 backend/
 ├── app/
-│   ├── api/            # FastAPI routers (health; cases + review in Phase 4)
+│   ├── api/            # FastAPI routers (health, cases, documents, reports, reviews)
 │   ├── core/           # config (typed settings), db, logging
 │   │   └── llm/        # LLMClient ABC + openrouter/claude/openai/gemini/mock adapters
 │   ├── models/         # SQLAlchemy 2.0 ORM (Case, Document, ExtractedField, Flag, ...)
 │   ├── schemas/        # Pydantic v2 API + LLM structured-output schemas
-│   └── prompts/        # versioned prompt templates (Phase 2)
+│   ├── prompts/        # versioned prompt templates (extraction_v1, report_summary_v1)
+│   └── services/       # ingest, extraction, crosscheck, checklist, report, router, graph
+│       └── checklists.yaml  # per-asset-type required-docs + validity windows
 ├── alembic/            # migrations (0001 initial schema)
-├── tests/              # pytest (health, models, LLM contract, OpenRouter)
+├── tests/              # 86 tests: unit + API + e2e synthetic cases
+├── samples/cases/      # 3 synthetic case packs (clean / mismatch / stale) for the demo
 ├── Dockerfile
 └── pyproject.toml
 docker-compose.yml      # Postgres 16 + API
+frontend/               # React (Vite + Tailwind): new case, case detail, review queue
 Makefile  .env.example  .pre-commit-config.yaml
 ```
 
@@ -157,14 +161,18 @@ Makefile  .env.example  .pre-commit-config.yaml
 (severity, type, rule), one `Report` (rating, summary, checklist, SHA-256 hash) and
 `ReviewTask` entries for the human queue. `LLMCallLog` audits every model call.
 
-## 9. API (Phase 1)
+## 9. API
 
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/health` | Liveness + DB + provider status |
-
-Full case/review API lands in Phase 4 (`/cases`, `/cases/{id}/documents`,
-`/cases/{id}/run`, `/cases/{id}/report`, `/review-tasks`).
+| POST/GET | `/cases` | Create a case; list all cases |
+| GET | `/cases/{id}` | Case detail (documents, fields, flags) |
+| POST | `/cases/{id}/documents` | Upload a document (stored content-addressed, SHA-256 dedupe) |
+| POST | `/cases/{id}/run` | Run the full pipeline (ingest▶extract▶crosscheck▶checklist▶report▶route) |
+| GET | `/cases/{id}/report` | Verification report (deterministic rating + hash) |
+| GET | `/review-tasks` | Human review queue |
+| POST | `/review-tasks/{id}/decide` | Approve/reject with notes |
 
 ## 10. Contributing
 
