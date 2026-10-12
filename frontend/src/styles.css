@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* subtle paper grain */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  z-index: 0;
+  background-image: radial-gradient(#00000008 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+.stamp {
+  border: 3px double #b3372b;
+  color: #b3372b;
+  transform: rotate(-4deg);
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.9rem;
+  display: inline-block;
+}
+
+.field-row:hover .snippet {
+  display: block;
+}
